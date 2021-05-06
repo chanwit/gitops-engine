@@ -34,6 +34,15 @@ func (r *Resource) ResourceKey() kube.ResourceKey {
 }
 
 func (r *Resource) isParentOf(child *Resource) bool {
+	// Hack for Kustomization
+	if r.Resource.GetKind() == "Kustomization" {
+		labels := child.Resource.GetLabels()
+		if labels["kustomize.toolkit.fluxcd.io/name"] == r.Resource.GetName() &&
+			labels["kustomize.toolkit.fluxcd.io/namespace"] == r.Resource.GetNamespace() {
+			return true
+		}
+	}
+
 	for i, ownerRef := range child.OwnerRefs {
 
 		// backfill UID of inferred owner child references

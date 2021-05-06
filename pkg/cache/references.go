@@ -55,6 +55,22 @@ func (c *clusterCache) resolveResourceReferences(un *unstructured.Unstructured) 
 		} else {
 			isInferredParentOf = refs
 		}
+
+	case un.GetLabels()["kustomize.toolkit.fluxcd.io/name"] != "":
+		labels := un.GetLabels()
+		ownerRefs = append(ownerRefs, metav1.OwnerReference{
+			APIVersion:         "kustomize.toolkit.fluxcd.io/v1beta1",
+			Kind:               "Kustomization",
+			Name:               labels["kustomize.toolkit.fluxcd.io/name"],
+		})
+
+	case un.GroupVersionKind().Group == "kustomize.toolkit.fluxcd.io" && un.GetKind() == "Kustomization":
+		isInferredParentOf = func(k kube.ResourceKey) bool {
+			if k.Name == un.GetName() && k.Namespace == un.GetNamespace() {
+				return true
+			}
+			return false
+		}
 	}
 
 	return ownerRefs, isInferredParentOf
