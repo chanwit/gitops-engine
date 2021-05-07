@@ -728,10 +728,14 @@ func (c *clusterCache) IterateHierarchy(key kube.ResourceKey, action func(resour
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	if res, ok := c.resources[key]; ok {
+		fmt.Println(">>> cluster cache: IterateHierarchy")
+		fmt.Printf(">>> key: %v\n", key)
 		nsNodes := c.nsIndex[key.Namespace]
+		fmt.Printf(">>> nsNodes: %v\n", nsNodes)
 		action(res, nsNodes)
 		childrenByUID := make(map[types.UID][]*Resource)
 		for _, child := range nsNodes {
+			fmt.Printf(">>> each nsNodes: %v\n", child)
 			if res.isParentOf(child) {
 				childrenByUID[child.Ref.UID] = append(childrenByUID[child.Ref.UID], child)
 			}
